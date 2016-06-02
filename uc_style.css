@@ -1,0 +1,42 @@
+.uc-whats-on-component{
+    width: 500px;
+    border: solid gray 1px;
+    margin: 1em;
+}
+
+.uc-whats-on-component ul{
+    list-style:none;
+    padding-left:0;
+    border: solid gray 1px;
+}
+
+.uc-event{
+    height: 80px;
+    border-bottom: solid #ebebeb 1px;
+}
+
+li.uc-event img{
+  height: 80px;
+  float: left;
+  margin-right: 3px;
+}
+
+.uc-event-content{
+    padding: 3px;
+}
+
+li.uc-month-heading,
+li.uc-day-heading{
+    background-color: #ebebeb;
+    padding: 5px;
+}
+
+li.uc-month-heading{
+    background-color: #bbbbff;
+}
+
+.uc-month-heading h2,
+.uc-day-heading h3,
+.uc-event h4{
+    margin: 0px;
+}
