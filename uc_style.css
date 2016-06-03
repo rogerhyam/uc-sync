@@ -1,5 +1,5 @@
 .uc-whats-on-component{
-    width: 500px;
+    width: 600px;
     border: solid gray 1px;
     margin: 1em;
 }
@@ -17,7 +17,7 @@
 
 li.uc-event img{
   height: 80px;
-  float: left;
+  float: right;
   margin-right: 3px;
 }
 
@@ -39,4 +39,28 @@ li.uc-month-heading{
 .uc-day-heading h3,
 .uc-event h4{
     margin: 0px;
+}
+
+.uc-whats-on-component select{
+    width:32%;
+    margin-left: 2px;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1;
+    border: solid 1px gray;
+    border-radius: 0;
+    height: 34px;
+}
+
+.uc-event-full img{
+    float: right;
+    width: 200px;
+}
+
+.uc-current-repeat{
+    background-color: yellow;
+}
+
+.uc-current-event{
+    background-color: yellow;
 }

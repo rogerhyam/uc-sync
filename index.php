@@ -5,24 +5,152 @@
 
     // are we displaying a list or a single event?
     
+    uc_head();
     if(@$_GET['uc_id']){
         uc_display_single_event();
     }else{
         uc_display_event_list();
     }
-    
+    uc_foot();
 
 function uc_display_single_event(){
+    
     global $mysqli;
+    
+    
+    $uc_id = $_GET['uc_id'];
+    if(!is_numeric($uc_id)){
+        echo "<li>Error: Event ID is not numeric.</li>";
+        return;
+    }
+    
+    if( @$_GET['repeat'] && is_numeric($_GET['repeat']) ){
+        $repeat = $_GET['repeat'];
+    }else{
+        $repeat = -1;
+    }
+    
+    // doesn't matter which repeat of an event we pull out as they are
+    // identical accept for the dates
+    $sql = "SELECT * FROM events WHERE uc_id = $uc_id ORDER BY `repeat` LIMIT 1";
+    $result = $mysqli->query($sql);
+    if($result->num_rows < 1){
+        echo "<li>Error: No event found for ID: $uc_id.</li>";
+        return;
+    }
+    
+    $event = $result->fetch_assoc();
+    $event_data = json_decode($event['raw']);
+
+    echo "<li class=\"uc-event-full\">";
+    
+    if($event['image_path']){
+        $image_src = "images/" . $event['uc_id'] . '_thumb.jpg';
+        echo "<img src=\"$image_src\" />";
+    }
+   
+    echo '<h2>';
+    echo $event_data->title;
+    echo '</h2>';
+    echo $event_data->body;
+    
+    echo '<div class="uc-event-full-details">';
+    echo '<h3>Venue</h3> ' . $event_data->venue;
+    echo ' @ <a href="?garden_id='. $event_data->garden_id .'">'. $event_data->garden .'</a>';
+
+    if(isset($event_data->ad_start_times)){
+        echo '<h3>Times</h3>';
+        echo '<ul>';
+        for($i = 0; $i < count($event_data->ad_start_times); $i++){
+            echo '<li>';
+            echo $event_data->ad_start_times[$i];
+            
+            if(isset($event_data->ad_end_times[$i])){
+                echo ' - ' . $event_data->ad_end_times[$i];
+            }
+            
+            echo '</li>';
+            
+        }
+        echo '</ul>';
+    }
+
+   
+
+    echo '<h3>Dates</h3>';
+    
+    echo '<ul>';
+    $months = array();
+    foreach($event_data->dates as $r){
+        
+        $date = new DateTime('@' . $r->start_timestamp);
+        $date->setTimeZone(new DateTimeZone('Europe/London'));
+        $date_string = $date->format('l jS F Y');
+        $months[$date->format('n')] = $date->format('F');
+        
+        if($r->delta == $repeat){
+            echo '<li class="uc-current-repeat" >';
+        }else{
+            echo "<li>";    
+        }
+        // echo '<a href="?month=' . $month  . '&current_uc_id='. $uc_id .'">';
+        echo $date_string;
+        // echo '</a>';
+        echo "</li>";
+        
+    }
+    echo '</ul>';
+    
+    $links = array();
+    foreach($months as $month_id => $month){
+        $links[] = '<a href="?month='. $month_id  .'">'. $month .'</a>';
+    }
+    foreach($event_data->cat_flags as $cat){
+        if($cat->id == 'flag_142') continue; // skip the "website" flag
+        $links[] = '<a href="?flags='. $cat->id .'">'. $cat->name  .'</a>';
+    }
+    
+    echo "<p>";
+    echo '<strong>Listed in: </strong>';
+    $done_first = false;
+    for($i = 0; $i < count($links); $i++){
+        
+        $link = $links[$i];
+        
+        if($i > 0){
+            if($i == count($links) -1){
+               echo ' and ';
+            }else{
+                echo ', ';
+            }
+  
+        }
+        
+        echo $link;
+            
+    }
+    echo ".</p>";
+    
+    echo '</div>';
+    
+    // var_dump($event_data);
+    
+    echo "</li>";
+    
 }
 
 function uc_display_event_list(){
     global $mysqli;
-    uc_head();
     uc_list_filter();
     
     // get a list of the events matching the GET params
-    $today_starts = strtotime('today midnight');
+    // from timestamp
+    if( @$_GET['from'] && is_numeric($_GET['from']) ){
+        $today_starts = $_GET['from'];
+    }else{
+        $today_starts = strtotime('today midnight');
+    }
+    
     $sql = "SELECT * FROM events WHERE start_timestamp > $today_starts ";
     
     // garden
@@ -50,6 +178,7 @@ function uc_display_event_list(){
         $sql .= " AND day_of_week = " . $_GET['day_of_week'];
     }
     
+    
     // flags
     if( @$_GET['flags']){
         $flags = explode(',', $_GET['flags']);
@@ -66,6 +195,8 @@ function uc_display_event_list(){
     $result = $mysqli->query($sql);
     
     // fixme - no results
+    // fixme - limit 100
+    
     $month = -1;
     $day_of_week = -1;
     $day_of_month = -1;
@@ -92,7 +223,6 @@ function uc_display_event_list(){
         uc_render_event_li($event);
     }
 
-    uc_foot();
 }
 
 function uc_render_month_li($date){
@@ -112,18 +242,35 @@ function uc_render_day_li($date){
 function uc_render_event_li($event){
     
     $event_data = json_decode($event['raw']);
-    echo '<li class="uc-event">';
+    
+    if(@$_GET['current_uc_id'] && $_GET['current_uc_id'] == $event['uc_id'] ){
+        echo '<li class="uc-event uc-current-event">';
+    }else{
+        echo '<li class="uc-event">';
+    }
+    
+    
     if($event['image_path']){
         $image_src = "images/" . $event['uc_id'] . '_thumb.jpg';
-    }else{
-        $image_src = "fixme";
+        echo "<img src=\"$image_src\" />";
     }
-    echo "<img src=\"$image_src\" />";
     
     echo '<div class="uc-event-content">';
+    echo "<a href=\"?uc_id={$event['uc_id']}&repeat={$event['repeat']}\">";
     echo '<h4>';
     echo $event_data->title;
     echo '</h4>';
+    echo "</a>";
+    
+    // get a shortened event body
+    $body = strip_tags($event_data->body);
+    if(strlen($body) > 100){
+        $body = substr($body, 0, strpos($body, ' ', 94)) . " ...";
+    }
+    echo $body;
+    
+    echo " <a href=\"?uc_id={$event['uc_id']}&repeat={$event['repeat']}\">Full details &gt;&gt;</a>";
+    
     echo '</div>';
     
     
@@ -150,6 +297,34 @@ function uc_foot(){
 
 function uc_list_filter(){
     
+    // flag selector
+    if(@$_GET['flags']) $current_flag = $_GET['flags'];
+    else $current_flag = '';
+    
+    $flag_picks = array(
+            'cat_136' => 'Events',
+            'cat_136,flag_174' => 'Events for Families',
+            'cat_136,flag_176' => 'Events for Adults',
+            'cat_8' => 'Exhibitions',
+            'cat_139' => 'Short Courses',
+            'cat_138' => 'Professional Courses'
+    );
+    
+?>
+    <form method="GET" action="">
+        <select name="flags" onchange="this.form.submit()">
+            <option value="">Everything</option>
+<?php
+        foreach($flag_picks as $flag => $label){
+            if($current_flag == $flag) $selected = 'selected';
+            else $selected = '';
+            echo "<option $selected value=\"$flag\">$label</option>";
+        }
+
+?>
+        </select>
+<?php
+    
     // month selector
     if(@$_GET['month']) $current_month = $_GET['month'];
     else $current_month = 'all';
@@ -157,7 +332,6 @@ function uc_list_filter(){
                 'July','August', 'September','October','November','December');
     
 ?>
-    <form method="GET" action="">
         <select name="month" onchange="this.form.submit()">
             <option value="all">Today</option>
 <?php
@@ -193,6 +367,7 @@ function uc_list_filter(){
 
 ?>
         </select>
+        
     </form>
 
 <?php
