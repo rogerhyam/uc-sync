@@ -36,17 +36,22 @@ li.uc-day-heading{
 }
 
 li.uc-month-heading{
-    background-color: #bbbbff;
+    background-color: 	rgb(231, 187, 238);
 }
 
 .uc-month-heading h2,
 .uc-day-heading h3,
 .uc-event h4{
-    margin: 0px;
+    margin: 0px !important;
+}
+
+.uc-event-full h3{
+    margin-top: 0.5em !important;
+    margin-bottom: 0px !important;
 }
 
 .uc-whats-on-component select{
-    width:32%;
+    width:48%;
     margin-left: 2px;
     font-size: 14px;
     font-weight: bold;
@@ -54,6 +59,10 @@ li.uc-month-heading{
     border: solid 1px gray;
     border-radius: 0;
     height: 34px;
+    color: #9f48a3;
+}
+.uc-whats-on-component form{
+    margin-bottom: 1em;
 }
 
 .uc-event-full img{
@@ -67,4 +76,9 @@ li.uc-month-heading{
 
 .uc-current-event{
     background-color: yellow;
+}
+
+/* hide the back to top thing */
+#b-top{
+    display: none;
 }

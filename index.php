@@ -114,8 +114,8 @@ function uc_display_single_event(){
         $links[] = javascript_link('flags='. $cat->id, $cat->name);
     }
     
+    echo '<h3>Listed in</h3>';
     echo "<p>";
-    echo '<strong>Listed in: </strong>';
     $done_first = false;
     for($i = 0; $i < count($links); $i++){
         
@@ -136,8 +136,6 @@ function uc_display_single_event(){
     echo ".</p>";
     
     echo '</div>';
-    
-    // var_dump($event_data);
     
     echo "</li>";
     
@@ -265,7 +263,7 @@ function uc_render_event_li($event){
     // get a shortened event body
     $body = strip_tags($event_data->body);
     if(strlen($body) > 100){
-        $body = substr($body, 0, strpos($body, ' ', 94)) . " ...";
+        $body = substr($body, 0, strpos($body, ' ', 94)) . " ... ";
     }
     echo $body;
     
@@ -331,10 +329,11 @@ function uc_list_filter(){
     else $current_flag = '';
     
     $flag_picks = array(
-            'cat_136' => 'Events',
-            'cat_136,flag_174' => 'Events for Families',
-            'cat_136,flag_176' => 'Events for Adults',
-            'cat_8' => 'Exhibitions',
+         
+         // 'cat_136' => 'Events',
+         //    'cat_136,flag_174' => 'Events for Families',
+         //   'cat_136,flag_176' => 'Events for Adults',
+         //  'cat_8' => 'Exhibitions',
             'cat_139' => 'Short Courses',
             'cat_138' => 'Professional Courses'
     );
@@ -342,7 +341,7 @@ function uc_list_filter(){
 ?>
     <form method="GET" action="">
         <select name="flags" onchange="this.form.submit()">
-            <option value="">Everything</option>
+            <option value="">All Courses</option>
 <?php
         foreach($flag_picks as $flag => $label){
             if($current_flag == $flag) $selected = 'selected';
@@ -362,7 +361,7 @@ function uc_list_filter(){
     
 ?>
         <select name="month" onchange="this.form.submit()">
-            <option value="all">Today</option>
+            <option value="all">Upcoming</option>
 <?php
         $n = 1;
         foreach($months as $month){
@@ -376,6 +375,7 @@ function uc_list_filter(){
 <?php
 
     // garden selector
+/*
     if(@$_GET['garden_id']) $current_garden_id = $_GET['garden_id'];
     else $current_garden_id = 'all';
     $gardens = array(
@@ -384,18 +384,24 @@ function uc_list_filter(){
             '4' => 'Dawyck Botanics',
             '3' => 'Logan Botanics',
     );
-?>            
+*/
+?>
+<!--
         <select name="garden_id" onchange="this.form.submit()">
             <option value="all">All Four Gardens</option>
+-->
 <?php
+ /*
         foreach($gardens as $garden_id => $garden){
             if($current_garden_id == $garden_id) $selected = 'selected';
             else $selected = '';
             echo "<option $selected value=\"$garden_id\">$garden</option>";
         }
-
+*/
 ?>
+<!--
         </select>
+-->
         
     </form>
 
