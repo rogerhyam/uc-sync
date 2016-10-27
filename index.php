@@ -45,7 +45,7 @@ function uc_display_single_event(){
     echo "<li class=\"uc-event-full\">";
     
     if($event['image_path']){
-        $image_src = "images/" . $event['uc_id'] . '_thumb.jpg';
+        $image_src = "http".(!empty($_SERVER['HTTPS'])?"s":"") . "://".$_SERVER['SERVER_NAME'] . "/images/" . $event['uc_id'] . '_thumb.jpg';
         echo "<img src=\"$image_src\" />";
     }
    
@@ -56,7 +56,12 @@ function uc_display_single_event(){
     
     echo '<div class="uc-event-full-details">';
     echo '<h3>Venue</h3> ' . $event_data->venue;
-    echo ' @ <a href="?garden_id='. $event_data->garden_id .'">'. $event_data->garden .'</a>';
+    echo ' @ ';
+    
+    $qs = 'garden_id='. $event_data->garden_id .'">';
+    $title =  $event_data->garden;
+    echo javascript_link($qs, $title);
+    
 
     if(isset($event_data->ad_start_times)){
         echo '<h3>Times</h3>';
@@ -93,9 +98,7 @@ function uc_display_single_event(){
         }else{
             echo "<li>";    
         }
-        // echo '<a href="?month=' . $month  . '&current_uc_id='. $uc_id .'">';
         echo $date_string;
-        // echo '</a>';
         echo "</li>";
         
     }
@@ -103,11 +106,12 @@ function uc_display_single_event(){
     
     $links = array();
     foreach($months as $month_id => $month){
-        $links[] = '<a href="?month='. $month_id  .'">'. $month .'</a>';
+        $links[] = javascript_link('month='. $month_id, $month);
+        
     }
     foreach($event_data->cat_flags as $cat){
         if($cat->id == 'flag_142') continue; // skip the "website" flag
-        $links[] = '<a href="?flags='. $cat->id .'">'. $cat->name  .'</a>';
+        $links[] = javascript_link('flags='. $cat->id, $cat->name);
     }
     
     echo "<p>";
@@ -251,17 +255,13 @@ function uc_render_event_li($event){
     
     
     if($event['image_path']){
-        $image_src = "images/" . $event['uc_id'] . '_thumb.jpg';
+        $image_src =  "http".(!empty($_SERVER['HTTPS'])?"s":"") . "://".$_SERVER['SERVER_NAME'] . "/images/" . $event['uc_id'] . '_thumb.jpg';
         echo "<img src=\"$image_src\" />";
     }
     
     echo '<div class="uc-event-content">';
-    echo "<a href=\"?uc_id={$event['uc_id']}&repeat={$event['repeat']}\">";
-    echo '<h4>';
-    echo $event_data->title;
-    echo '</h4>';
-    echo "</a>";
-    
+    echo javascript_link("uc_id={$event['uc_id']}&repeat={$event['repeat']}", '<h4>' . $event_data->title . '</h4>');
+
     // get a shortened event body
     $body = strip_tags($event_data->body);
     if(strlen($body) > 100){
@@ -269,19 +269,48 @@ function uc_render_event_li($event){
     }
     echo $body;
     
-    echo " <a href=\"?uc_id={$event['uc_id']}&repeat={$event['repeat']}\">Full details &gt;&gt;</a>";
-    
+    $qs = "uc_id={$event['uc_id']}&repeat={$event['repeat']}";
+    $title = 'Full details &gt;&gt;';
+    echo javascript_link($qs, $title);
+
     echo '</div>';
-    
-    
     echo "</li>";
     
 }
 
+function javascript_link($qs, $title){
+    return '<script type="text/javascript">ucCalSync.writeLink("' . $qs . '", "'. $title .'" )</script>';
+}
+
 function uc_head(){
+    
+    //include the style directly
     echo "\n<style type=\"text/css\">\n";
     readfile('uc_style.css');
     echo "\n</style>\n";
+    
+    // tiny bit of javascript to work out where we are
+?>
+<script type="text/javascript">
+
+   var ucCalSync = {};
+   ucCalSync.currentPage = window.location.href.split('?')[0];
+   
+   ucCalSync.writeLink = function(qs, title){
+       document.write('<a href=\"');
+       document.write(ucCalSync.currentPage);
+       document.write('?');
+       document.write(qs);
+       document.write('" >');
+       document.write(title);
+       document.write('</a>');
+   }
+   
+
+</script>
+
+<?php
+    
 ?>
     <div class="uc-whats-on-component">
         <ul>

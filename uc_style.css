@@ -1,14 +1,18 @@
 .uc-whats-on-component{
-    width: 600px;
-    border: solid gray 1px;
-    margin: 1em;
+    width: 100%;
 }
 
 .uc-whats-on-component ul{
-    list-style:none;
-    padding-left:0;
-    border: solid gray 1px;
+    list-style-type:none !important;
+    padding:0px !important;
+    margin:0px !important;
 }
+
+.uc-whats-on-component li{
+    list-style-type:none !important;
+    padding-left:0;
+}
+
 
 .uc-event{
     height: 80px;
