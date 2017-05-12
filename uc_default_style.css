@@ -1,0 +1,85 @@
+.uc-whats-on-component{
+    width: 100%;
+}
+
+.uc-whats-on-component ul{
+    list-style-type:none !important;
+    padding:0px !important;
+    margin:0px !important;
+}
+
+.uc-whats-on-component li{
+    list-style-type:none !important;
+    padding-left:0;
+}
+
+
+.uc-event{
+    height: 80px;
+    border-bottom: solid #ebebeb 1px;
+}
+
+li.uc-event img{
+  height: 80px;
+  float: right;
+  margin-right: 3px;
+}
+
+.uc-event-content{
+    padding: 3px;
+}
+
+li.uc-month-heading,
+li.uc-day-heading{
+    background-color: #ebebeb;
+    padding: 5px;
+}
+
+li.uc-month-heading{
+    background-color: 	#666;
+    color: white;
+}
+
+.uc-month-heading h2,
+.uc-day-heading h3,
+.uc-event h4{
+    margin: 0px !important;
+}
+
+.uc-event-full h3{
+    margin-top: 0.5em !important;
+    margin-bottom: 0px !important;
+}
+
+.uc-whats-on-component select{
+    width:48%;
+    margin-left: 2px;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1;
+    border: solid 1px gray;
+    border-radius: 0;
+    height: 34px;
+    color: #9f48a3;
+}
+.uc-whats-on-component form{
+    margin-bottom: 1em;
+}
+
+.uc-event-full img{
+    float: right;
+    width: 200px;
+}
+
+.uc-current-repeat{
+    background-color: yellow;
+}
+
+.uc-current-event{
+    background-color: yellow;
+}
+
+/* hide the back to top thing */
+#b-top{
+    display: none;
+}

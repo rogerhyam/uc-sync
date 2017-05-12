@@ -5,7 +5,7 @@
     // try and get the last sync time
     $last_timestamp = 0;
     if(file_exists('last_sync.txt')){
-//        $last_timestamp = file_get_contents('last_sync.txt');
+        $last_timestamp = file_get_contents('last_sync.txt');
     }
     
     // call for the data

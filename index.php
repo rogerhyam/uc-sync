@@ -2,9 +2,14 @@
 
     // may need full path in deployment
     require_once('config.php');
+    require_once('flag_sets.php');
+
+    // the flag_set is global thing that we use all over the place
+    // to define if this is events etc.
+    $flag_set = @$_GET['flag_set'];
+    if(!$flag_set) $flag_set = 'default';
 
     // are we displaying a list or a single event?
-    
     uc_head();
     if(@$_GET['uc_id']){
         uc_display_single_event();
@@ -12,11 +17,13 @@
         uc_display_event_list();
     }
     uc_foot();
+    
 
 function uc_display_single_event(){
     
     global $mysqli;
-    
+    global $flag_set;
+    global $flag_sets;
     
     $uc_id = $_GET['uc_id'];
     if(!is_numeric($uc_id)){
@@ -52,13 +59,14 @@ function uc_display_single_event(){
     echo '<h2>';
     echo $event_data->title;
     echo '</h2>';
-    echo $event_data->body;
+    // echo $event_data->body;
+    echo str_replace('<p>&nbsp;</p>', ' ', $event_data->body); // weird stuff with single line non breaking in modx
     
     echo '<div class="uc-event-full-details">';
     echo '<h3>Venue</h3> ' . $event_data->venue;
     echo ' @ ';
     
-    $qs = 'garden_id='. $event_data->garden_id .'">';
+    $qs = 'garden_id='. $event_data->garden_id;
     $title =  $event_data->garden;
     echo javascript_link($qs, $title);
     
@@ -142,7 +150,11 @@ function uc_display_single_event(){
 }
 
 function uc_display_event_list(){
+    
     global $mysqli;
+    global $flag_set;
+    global $flag_sets;
+    
     uc_list_filter();
     
     // get a list of the events matching the GET params
@@ -179,10 +191,12 @@ function uc_display_event_list(){
     if( @$_GET['day_of_week'] && is_numeric($_GET['day_of_week']) ){
         $sql .= " AND day_of_week = " . $_GET['day_of_week'];
     }
+
+    $flags = array();
     
-    
-    // flags
-    if( @$_GET['flags']){
+    // flags from query string
+    if(@$_GET['flags']){
+        
         $flags = explode(',', $_GET['flags']);
         foreach($flags as $flag){
             // reject anything with space for sql injection
@@ -190,7 +204,29 @@ function uc_display_event_list(){
             if( preg_match('/\s/', $flag) ) continue;
             $sql .= " AND flags LIKE '%$flag%'";
         }
+        
+    }else{
+        
+        // no flags passed so we use the default flag_set and OR them
+        // must carry one of these to be visible
+        $flags = $flag_sets[$flag_set];
+        
+        if(count($flags)>0){
+        
+            $sql_or = '';
+            foreach ($flags as $flag => $name) {
+                 if(strlen($sql_or)>0) $sql_or .= ' OR ';
+                 $sql_or .= " flags LIKE '%$flag%' ";
+            }
+        
+            $sql .= " AND ( $sql_or ) ";
+            
+        }
+        
+        
     }
+    
+    
     
     $sql .= " ORDER BY start_timestamp";
     
@@ -277,14 +313,29 @@ function uc_render_event_li($event){
 }
 
 function javascript_link($qs, $title){
+    global $flag_set;
+    global $flag_sets;
+    
+    if($qs){
+        $qs = 'flag_set=' . $flag_set . '&' . $qs;
+    }else{
+        $qs = 'flag_set=' . $flag_set;
+    }
     return '<script type="text/javascript">ucCalSync.writeLink("' . $qs . '", "'. $title .'" )</script>';
 }
 
 function uc_head(){
     
+    global $file_set;
+    
     //include the style directly
     echo "\n<style type=\"text/css\">\n";
-    readfile('uc_style.css');
+    if(file_exists('uc_'. $file_set . '_style.css')){
+        readfile('uc_'. $file_set . '_style.css');
+    }else{
+        readfile('uc_default_style.css');
+    }
+    
     echo "\n</style>\n";
     
     // tiny bit of javascript to work out where we are
@@ -324,24 +375,20 @@ function uc_foot(){
 
 function uc_list_filter(){
     
+    global $flag_set;
+    global $flag_sets;
+    
     // flag selector
     if(@$_GET['flags']) $current_flag = $_GET['flags'];
     else $current_flag = '';
     
-    $flag_picks = array(
-         
-         // 'cat_136' => 'Events',
-         //    'cat_136,flag_174' => 'Events for Families',
-         //   'cat_136,flag_176' => 'Events for Adults',
-         //  'cat_8' => 'Exhibitions',
-            'cat_139' => 'Short Courses',
-            'cat_138' => 'Professional Courses'
-    );
+    $flag_picks = $flag_sets[$flag_set];
     
 ?>
     <form method="GET" action="">
+        <input type="hidden" name="flag_set" value="<?php echo $flag_set ?>"/>
         <select name="flags" onchange="this.form.submit()">
-            <option value="">All Courses</option>
+            <option value="">~ Show all ~</option>
 <?php
         foreach($flag_picks as $flag => $label){
             if($current_flag == $flag) $selected = 'selected';
