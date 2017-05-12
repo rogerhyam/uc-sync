@@ -326,12 +326,12 @@ function javascript_link($qs, $title){
 
 function uc_head(){
     
-    global $file_set;
+    global $flag_set;
     
     //include the style directly
     echo "\n<style type=\"text/css\">\n";
-    if(file_exists('uc_'. $file_set . '_style.css')){
-        readfile('uc_'. $file_set . '_style.css');
+    if(file_exists('uc_'. $flag_set . '_style.css')){
+        readfile('uc_'. $flag_set . '_style.css');
     }else{
         readfile('uc_default_style.css');
     }
